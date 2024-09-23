@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Interface</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1a1a2e;
+      color: white;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .container {
+      display: flex;
+      width: 100%;
+    }
+    .left-section, .right-section {
+      height: 100vh;
+    }
+    .left-section {
+      width: 70%;
+      background-color: #162447;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    .right-section {
+      width: 30%;
+      background-color: #1f4068;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    .done_button {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .content {
+      text-align: center;
+      width: 100%;
+    }
+    #board {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      transform: scale(0.68) translateY(-172px); /* Scale the board to 70% and lift it up by 30px */
+      transform-origin: center; /* Center the scale transformation */
+    }
+    #fenInput {
+      padding: 10px;
+      font-size: 16px;
+      width: 80%;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      display: none;
+    }
+    #fenLabel {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    /* Custom confirmation dialog styles */
+    #confirmationDialog {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1f4068;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      text-align: center;
+      width: 400px;
+      margin-left: 300px;
+    }
+
+    #confirmationDialog .message {
+      font-size: 1.5em; /* Bigger font size */
+      margin-bottom: 20px; /* Space between message and buttons */
+    }
+
+    #confirmationDialog .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px; /* Space between buttons */
+    }
+
+    #confirmationDialog button {
+      background-color: #e43f5a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1.2em;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    #confirmationDialog button:hover {
+      background-color: #b9344a;
+    }
+
+    /* Button Styles */
+    .button {
+      background-color: #e43f5a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1.2em;
+      border-radius: 5px;
+      transition: background-color 0.3s ease; /* Smooth transition for color change */
+    }
+
+    .button:active {
+      background-color: green; /* Change color to green when pressed */
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="left-section">
+    <div id="board"></div>
+  </div>
+
+  <div class="right-section">
+    <div class="done_button">
+      <button class="button" id="doneButton">Done Playing</button>
+    </div>
+    <div class="content">
+      <input type="text" id="fenInput" placeholder="Enter FEN notation">
+      <button class="button" id="setFenButton" style="display:none;">Set FEN</button>
+      <div id="fenLabel">Current FEN: </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Custom Confirmation Dialog -->
+<div id="confirmationDialog">
+  <div class="message">Is the updated FEN correct?</div>
+  <div class="button-container">
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo">No</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    var board = Chessboard('board', {
+      position: 'start',
+      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+      draggable: true,
+      dropOffBoard: 'trash',
+      sparePieces: true
+    });
+
+    function updateBoardSize() {
+      var container = document.getElementById('board').parentNode;
+      board.resize(container.clientWidth, container.clientHeight);
+    }
+
+    window.addEventListener('resize', updateBoardSize);
+    updateBoardSize();
+
+    function updateFenLabel() {
+      var fen = board.fen();
+      document.getElementById('fenLabel').textContent = 'Current FEN: ' + fen;
+    }
+
+    function setFen(fen) {
+      try {
+        board.position(fen);
+        updateFenLabel();  // Update the FEN label here after setting the new position
+      } catch (error) {
+        console.error("Invalid FEN notation:", error);
+      }
+    }
+
+    document.getElementById('doneButton').addEventListener('click', function () {
+      var button = this;
+
+      // Temporarily change the background color to green
+      button.style.backgroundColor = 'green';
+
+      // Revert the color back to the original after 300ms
+      setTimeout(function () {
+        button.style.backgroundColor = ''; // Reverts to original style set in CSS
+      }, 300); // Adjust the delay as needed
+
+      $.get('http://127.0.0.1:5050/process')
+              .done((response) => {
+                if (response.error) {
+                  alert(response.error);
+                } else {
+                  setFen(response);  // Update the board immediately
+                  showConfirmationDialog(response);  // Show the custom confirmation dialog
+                }
+              })
+              .fail((jqXHR) => {
+                let response;
+                try {
+                  response = JSON.parse(jqXHR.responseText);
+                  if (response.error) {
+                    alert(response.error);
+                  } else {
+                    alert(response);  // Handle other cases where there's a non-error response
+                  }
+                } catch (e) {
+                  alert("Failed to process the board.");
+                }
+              });
+    });
+
+    function showConfirmationDialog(fen) {
+      var dialog = document.getElementById('confirmationDialog');
+      dialog.style.display = 'block';
+
+      document.getElementById('confirmYes').onclick = function () {
+        dialog.style.display = 'none';
+        $.ajax({
+          url: 'http://127.0.0.1:5050/confirmFen',
+          type: 'POST',
+          contentType: 'application/json',  // Set content type to JSON
+          data: JSON.stringify({}),  // No data needed, just confirming
+          success: function(response) {
+            setFen(response);  // Set the updated FEN after move is applied
+          },
+          error: function(xhr, status, error) {
+            alert("Failed to apply move. Error: " + error);
+          }
+        });
+      };
+
+      document.getElementById('confirmNo').onclick = function () {
+        dialog.style.display = 'none';
+        // If not confirmed, show the "Set FEN" button
+        document.getElementById('setFenButton').style.display = 'block';
+      };
+    }
+
+    document.getElementById('setFenButton').addEventListener('click', () => {
+      var fen = board.fen();  // Get the current FEN from the board
+      $.ajax({
+        url: 'http://127.0.0.1:5050/setFen',
+        type: 'POST',
+        contentType: 'application/json',  // Set content type to JSON
+        data: JSON.stringify({ fen: fen }),  // Send the FEN as JSON
+        success: function(response) {
+          setFen(response.updated_fen);  // Update the board with the response FEN
+          alert("FEN sent to server and move generated. Updated FEN: " + JSON.stringify(response.updated_fen));
+          document.getElementById('setFenButton').style.display = 'none';  // Hide the "Set FEN" button after sending the FEN
+        },
+        error: function(xhr, status, error) {
+          alert("Failed to send FEN. Error: " + error);
+        }
+      });
+    });
+
+    updateFenLabel();
+  });
+</script>
+</body>
+</html>

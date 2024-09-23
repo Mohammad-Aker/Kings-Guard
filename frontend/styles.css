@@ -1,0 +1,26 @@
+body {
+  background-color: #121a21;
+  font-family: "Space Grotesk", "Noto Sans", sans-serif;
+}
+
+.bg-overlay-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.bg-overlay-container::before {
+  content: "";
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://cdn.usegalileo.ai/sdxl10/5640820e-44ab-4ac7-b8f6-26ae31e3593e.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 50px; /* Adjust the border-radius value as needed */
+  z-index: -1;
+}
