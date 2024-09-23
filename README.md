@@ -1,4 +1,4 @@
-# Chess Board Detection and Move Generation System
+# King's Guard
 
 This project automates the detection of chess pieces on a physical chessboard and updates the board state using FEN (Forsyth-Edwards Notation). The system integrates image processing for chess piece detection with the Stockfish chess engine and a custom build object detection model to generate legal moves, as well as an Arduino-based hardware setup to physically move the chess pieces.
 
